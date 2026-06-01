@@ -1,0 +1,7 @@
+QMainWindow {
+    background-color: #ffffff;
+}
+
+QWidget#mainPage {
+    background-color: #ffffff;
+}
