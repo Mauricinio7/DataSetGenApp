@@ -1,7 +1,516 @@
-QMainWindow {
-    background-color: #ffffff;
+/* ==========================================================
+   DataSet Gen App
+   Tema principal: Graphite Research / Blue Accent
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Base de la aplicación
+   ---------------------------------------------------------- */
+
+QMainWindow,
+QWidget#mainContainer {
+    background-color: #15191f;
+    color: #e4e9f0;
+    font-family: "Inter", "SF Pro Display", "Segoe UI", "Arial";
+    font-size: 13px;
 }
 
-QWidget#mainPage {
-    background-color: #ffffff;
+QToolTip {
+    color: #eef3f9;
+    background-color: #252c34;
+    border: 1px solid #3b4653;
+    padding: 6px 8px;
+}
+
+
+/* ----------------------------------------------------------
+   Header superior
+   ---------------------------------------------------------- */
+
+QFrame#statusHeader {
+    background-color: #1a1f26;
+    border: none;
+    border-bottom: 1px solid #2e3742;
+}
+
+QLabel#appTitle {
+    color: #f1f4f8;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+QLabel#appSubtitle {
+    color: #8390a0;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+QWidget#headerStatusItem {
+    background-color: #222831;
+    border: 1px solid #343e4a;
+    border-radius: 8px;
+    min-width: 215px;
+}
+
+QLabel#headerStatusLabel {
+    color: #8391a1;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+QLabel#headerStatusValue {
+    color: #d0d8e2;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* ----------------------------------------------------------
+   Área de trabajo general
+   ---------------------------------------------------------- */
+
+QWidget#workspaceContainer {
+    background-color: #15191f;
+}
+
+QStackedWidget#workflowPages {
+    background-color: #1b2027;
+    border: 1px solid #2d3641;
+    border-radius: 11px;
+}
+
+QWidget#contentPage {
+    background-color: #1b2027;
+    border-radius: 11px;
+}
+
+
+/* ----------------------------------------------------------
+   Sidebar vertical de pasos
+   ---------------------------------------------------------- */
+
+QFrame#stepSidebar {
+    background-color: #1b2027;
+    border: 1px solid #2d3641;
+    border-radius: 11px;
+    min-width: 258px;
+    max-width: 258px;
+}
+
+QLabel#sidebarHeader {
+    color: #788493;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+QPushButton#stepItem {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+    border-radius: 8px;
+    color: #abb5c2;
+    padding: 0px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 64px;
+}
+
+/* Paso todavía no habilitado */
+QPushButton#stepItem[stepState="pending"] {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+    color: #717b88;
+}
+
+/* Paso habilitado, pero no actual ni completado */
+QPushButton#stepItem[stepState="available"] {
+    background-color: #29333e;
+    border: 1px solid #435161;
+    color: #d4dbe4;
+}
+
+QPushButton#stepItem[stepState="available"]:hover {
+    background-color: #313c48;
+    border: 1px solid #526274;
+    color: #eef3f9;
+}
+
+/* Paso seleccionado actualmente */
+QPushButton#stepItem[stepState="active"] {
+    background-color: #123f6c;
+    border: 1px solid #2983d6;
+    color: #f3f8ff;
+    font-weight: 600;
+}
+
+QPushButton#stepItem[stepState="active"]:hover {
+    background-color: #174a7d;
+    border: 1px solid #3a96e5;
+}
+
+/* Paso ya completado */
+QPushButton#stepItem[stepState="completed"] {
+    background-color: #17382f;
+    border: 1px solid #277056;
+    color: #d2efe1;
+    font-weight: 500;
+}
+
+QPushButton#stepItem[stepState="completed"]:hover {
+    background-color: #1c4438;
+    border: 1px solid #36906e;
+    color: #e5fbf1;
+}
+
+QPushButton#stepItem:disabled {
+    color: #717b88;
+}
+
+
+/* ----------------------------------------------------------
+   Encabezado de páginas
+   ---------------------------------------------------------- */
+
+QLabel#pageTitle {
+    color: #f1f4f8;
+    font-size: 23px;
+    font-weight: 650;
+}
+
+QLabel#pageDescription {
+    color: #8c98a8;
+    font-size: 13px;
+}
+
+
+/* ----------------------------------------------------------
+   Tarjetas y paneles internos
+   ---------------------------------------------------------- */
+
+QFrame#panelCard {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 10px;
+}
+
+QLabel#panelTitle {
+    color: #e8edf4;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+
+/* ----------------------------------------------------------
+   Preview del video
+   ---------------------------------------------------------- */
+
+QWidget#previewContainer {
+    background-color: transparent;
+}
+
+QLabel#emptyVideoPreview {
+    color: #747f8d;
+    background-color: #14181e;
+    border: 1px dashed #36414d;
+    border-radius: 8px;
+    min-height: 340px;
+}
+
+QVideoWidget#videoPreview {
+    background-color: #090b0e;
+    border: none;
+    border-radius: 8px;
+    min-height: 340px;
+}
+
+
+/* ----------------------------------------------------------
+   Información del video
+   ---------------------------------------------------------- */
+
+QLabel#metadataLabel {
+    color: #7b8797;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+QLabel#metadataValue {
+    color: #d8dfe8;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* ----------------------------------------------------------
+   Botones principales
+   ---------------------------------------------------------- */
+
+QPushButton#primaryButton {
+    color: #ffffff;
+    background-color: #176fc1;
+    border: 1px solid #2687dd;
+    border-radius: 7px;
+    padding: 12px 22px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#primaryButton:hover:enabled {
+    background-color: #2180d5;
+    border: 1px solid #42a0ee;
+}
+
+QPushButton#primaryButton:pressed:enabled {
+    background-color: #125ca2;
+    border: 1px solid #2074bd;
+}
+
+QPushButton#primaryButton:disabled {
+    color: #687482;
+    background-color: #282f38;
+    border: 1px solid #343e49;
+}
+
+
+/* ----------------------------------------------------------
+   Botones secundarios
+   ---------------------------------------------------------- */
+
+QPushButton#secondaryButton {
+    color: #d5dce5;
+    background-color: #262d35;
+    border: 1px solid #39434f;
+    border-radius: 7px;
+    padding: 11px 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QPushButton#secondaryButton:hover:enabled {
+    color: #eef3f9;
+    background-color: #303944;
+    border: 1px solid #4a5665;
+}
+
+QPushButton#secondaryButton:pressed:enabled {
+    background-color: #222932;
+}
+
+QPushButton#secondaryButton:disabled {
+    color: #697482;
+    background-color: #232a32;
+    border: 1px solid #303945;
+}
+
+
+/* ----------------------------------------------------------
+   Botón Play / Pausa
+   ---------------------------------------------------------- */
+
+QPushButton#playButton {
+    color: #ffffff;
+    background-color: #176fc1;
+    border: 1px solid #2786d8;
+    border-radius: 22px;
+    padding: 0px;
+    icon-size: 18px;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
+}
+
+QPushButton#playButton:hover:enabled {
+    background-color: #2381d4;
+    border: 1px solid #49a1ea;
+}
+
+QPushButton#playButton:pressed:enabled {
+    background-color: #115b9f;
+    border: 1px solid #2374ba;
+}
+
+QPushButton#playButton:disabled {
+    background-color: #29313a;
+    border: 1px solid #36404b;
+}
+
+
+/* ----------------------------------------------------------
+   Slider de reproducción del video
+   ---------------------------------------------------------- */
+
+QSlider#videoProgress {
+    background-color: transparent;
+}
+
+QSlider#videoProgress::groove:horizontal {
+    background-color: #353e49;
+    height: 5px;
+    border-radius: 2px;
+}
+
+QSlider#videoProgress::sub-page:horizontal {
+    background-color: #237ecf;
+    border-radius: 2px;
+}
+
+QSlider#videoProgress::add-page:horizontal {
+    background-color: #353e49;
+    border-radius: 2px;
+}
+
+QSlider#videoProgress::handle:horizontal {
+    background-color: #43a0ed;
+    border: 2px solid #1e242b;
+    width: 14px;
+    height: 14px;
+    margin: -6px 0px;
+    border-radius: 7px;
+}
+
+QSlider#videoProgress::handle:horizontal:hover {
+    background-color: #6ab6f4;
+}
+
+QSlider#videoProgress:disabled {
+    background-color: transparent;
+}
+
+QSlider#videoProgress:disabled::groove:horizontal {
+    background-color: #2a3139;
+}
+
+QSlider#videoProgress:disabled::handle:horizontal {
+    background-color: #46515e;
+    border: 2px solid #222830;
+}
+
+QLabel#timeLabel {
+    color: #8995a5;
+    font-size: 12px;
+    min-width: 96px;
+}
+
+
+/* ----------------------------------------------------------
+   Footer inferior del workflow
+   ---------------------------------------------------------- */
+
+QFrame#workflowFooter {
+    background-color: #1a1f26;
+    border: none;
+    border-top: 1px solid #2d3641;
+}
+
+QLabel#progressTitle {
+    color: #dce3eb;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#progressStatus {
+    color: #7f8b9a;
+    font-size: 12px;
+}
+
+QProgressBar#analysisProgress {
+    background-color: #282f37;
+    border: 1px solid #343e48;
+    border-radius: 4px;
+    height: 8px;
+    text-align: center;
+}
+
+QProgressBar#analysisProgress::chunk {
+    background-color: #217ccb;
+    border-radius: 4px;
+}
+
+QProgressBar#analysisProgress:disabled {
+    background-color: #252b33;
+    border: 1px solid #303944;
+}
+
+QProgressBar#analysisProgress:disabled::chunk {
+    background-color: #343e49;
+}
+
+
+/* ----------------------------------------------------------
+   Diálogos y mensajes básicos
+   ---------------------------------------------------------- */
+
+QMessageBox {
+    background-color: #20262e;
+    color: #e4e9f0;
+}
+
+QMessageBox QLabel {
+    color: #e4e9f0;
+    font-size: 13px;
+}
+
+QMessageBox QPushButton {
+    color: #ffffff;
+    background-color: #176fc1;
+    border: 1px solid #2687dd;
+    border-radius: 6px;
+    padding: 8px 18px;
+    min-width: 84px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #2180d5;
+}
+
+
+/* ----------------------------------------------------------
+   Scrollbars, útiles cuando crezcan los paneles
+   ---------------------------------------------------------- */
+
+QScrollBar:vertical {
+    background-color: #1b2027;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #39434f;
+    border-radius: 5px;
+    min-height: 24px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #4b5867;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: #1b2027;
+    height: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #39434f;
+    border-radius: 5px;
+    min-width: 24px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #4b5867;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
 }
