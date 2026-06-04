@@ -514,3 +514,185 @@ QScrollBar::add-line:horizontal,
 QScrollBar::sub-line:horizontal {
     width: 0px;
 }
+
+/* ----------------------------------------------------------
+   Paso 2: selección de modelo
+   ---------------------------------------------------------- */
+
+QLabel#emptyModelArea {
+    color: #747f8d;
+    background-color: #14181e;
+    border: 1px dashed #36414d;
+    border-radius: 8px;
+    font-size: 14px;
+    min-height: 250px;
+}
+
+QFrame#modelNoteCard {
+    background-color: #1d2731;
+    border: 1px solid #334454;
+    border-radius: 8px;
+}
+
+QLabel#modelNoteTitle {
+    color: #d8e3ef;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#modelNoteText {
+    color: #9aa8b9;
+    font-size: 12px;
+}
+
+/* ----------------------------------------------------------
+   Panel persistente de vista previa del video
+   ---------------------------------------------------------- */
+
+QFrame#videoPreviewPanel {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 10px;
+}
+
+/* ----------------------------------------------------------
+   Paso 2: selección y validación de modelo
+   ---------------------------------------------------------- */
+
+QLabel#emptyModelArea {
+    color: #747f8d;
+    background-color: #14181e;
+    border: 1px dashed #36414d;
+    border-radius: 8px;
+    font-size: 14px;
+    min-height: 250px;
+}
+
+QLabel#emptyModelArea[validationState="validating"] {
+    color: #a9d3f7;
+    background-color: #172633;
+    border: 1px dashed #3273aa;
+}
+
+QLabel#emptyModelArea[validationState="valid"] {
+    color: #d2efe1;
+    background-color: #17382f;
+    border: 1px solid #277056;
+    font-weight: 600;
+}
+
+QLabel#emptyModelArea[validationState="invalid"] {
+    color: #d9a8a8;
+    background-color: #382323;
+    border: 1px solid #724141;
+}
+
+QFrame#modelNoteCard {
+    background-color: #1d2731;
+    border: 1px solid #334454;
+    border-radius: 8px;
+}
+
+QLabel#modelNoteTitle {
+    color: #d8e3ef;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#modelNoteText {
+    color: #9aa8b9;
+    font-size: 12px;
+}
+
+/* ----------------------------------------------------------
+   Paso 2: estado compacto de validación del modelo
+   ---------------------------------------------------------- */
+
+QFrame#modelStatusCard {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+    border-radius: 8px;
+}
+
+QFrame#modelStatusCard[validationState="empty"] {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+}
+
+QFrame#modelStatusCard[validationState="validating"] {
+    background-color: #1c2d3d;
+    border: 1px solid #326590;
+}
+
+QFrame#modelStatusCard[validationState="valid"] {
+    background-color: #17382f;
+    border: 1px solid #277056;
+}
+
+QFrame#modelStatusCard[validationState="invalid"] {
+    background-color: #382323;
+    border: 1px solid #724141;
+}
+
+QLabel#modelStatusValue {
+    color: #d8dfe8;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QFrame#modelStatusCard[validationState="valid"] QLabel#modelStatusValue {
+    color: #d2efe1;
+}
+
+QFrame#modelStatusCard[validationState="invalid"] QLabel#modelStatusValue {
+    color: #e6b5b5;
+}
+
+QFrame#modelNoteCard {
+    background-color: #1d2731;
+    border: 1px solid #334454;
+    border-radius: 8px;
+}
+
+QLabel#modelNoteTitle {
+    color: #d8e3ef;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#modelNoteText {
+    color: #9aa8b9;
+    font-size: 12px;
+}
+
+
+/* ----------------------------------------------------------
+   Diálogo de validación
+   ---------------------------------------------------------- */
+
+QDialog#modelValidationDialog {
+    background-color: #20262e;
+}
+
+QLabel#validationDialogTitle {
+    color: #f1f4f8;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+QLabel#validationDialogDescription {
+    color: #98a5b5;
+    font-size: 13px;
+}
+
+QProgressBar#validationProgress {
+    background-color: #2a323c;
+    border: 1px solid #37424f;
+    border-radius: 5px;
+    height: 10px;
+}
+
+QProgressBar#validationProgress::chunk {
+    background-color: #217ccb;
+    border-radius: 4px;
+}

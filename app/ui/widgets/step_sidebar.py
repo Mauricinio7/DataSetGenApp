@@ -12,7 +12,6 @@ from app.localization.texts import text
 
 
 class StepItem(QPushButton):
-    """Elemento visual e interactivo para un paso del flujo."""
 
     def __init__(self, step_number: int, step_label: str) -> None:
         super().__init__()
@@ -47,7 +46,6 @@ class StepItem(QPushButton):
 
 
 class StepSidebar(QFrame):
-    """Navegación vertical del flujo de generación del dataset."""
 
     step_requested = Signal(int)
 

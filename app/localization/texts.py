@@ -28,6 +28,7 @@ TEXTS_ES: Final[dict[str, str]] = {
     "pause": "Pausar",
     "stop": "Detener",
 
+    "preview_title": "Vista previa del video",
     "video_information": "Información del video",
     "video_name": "Archivo",
     "video_resolution": "Resolución",
@@ -49,6 +50,39 @@ TEXTS_ES: Final[dict[str, str]] = {
     "video_error_message": "El archivo seleccionado no pudo ser leído correctamente.",
 
     "time_empty": "00:00 / 00:00",
+
+    "model_title": "Seleccionar modelo",
+    "model_description": "Selecciona y valida el modelo de IA que se utilizará para analizar el video.",
+    "select_model": "Seleccionar modelo",
+    "change_model": "Cambiar modelo",
+    "model_information": "Información del modelo",
+    "model_file": "Archivo",
+    "model_format": "Formato",
+    "model_size": "Tamaño",
+    "model_device": "Dispositivo validado",
+    "model_path": "Ruta",
+    "model_status": "Estado",
+    "model_empty": "Selecciona un modelo .pt, .onnx o .engine",
+    "model_note_title": "Compatibilidad del equipo",
+    "model_note": "La aplicación comprobará que el modelo pueda ejecutarse en este dispositivo antes de permitir continuar.",
+    "model_dialog_title": "Seleccionar modelo de IA",
+    "model_filter": "Modelos compatibles (*.pt *.onnx *.engine);;Todos los archivos (*)",
+    "model_error_title": "Modelo no compatible",
+    "model_error_message": "El modelo seleccionado no pudo validarse en este dispositivo.",
+    "model_validating": "Validando modelo...",
+    "model_valid": "Modelo compatible",
+    "format_pytorch": "PyTorch (.pt)",
+    "format_onnx": "ONNX (.onnx)",
+    "format_tensorrt": "TensorRT (.engine)",
+    "backend_cpu": "CPU",
+    "backend_mps": "Apple Metal (MPS)",
+    "backend_cuda": "CUDA",
+    "backend_tensorrt": "TensorRT",
+    "placeholder_export_message": "Aquí seleccionaremos la carpeta donde se guardará el dataset generado.",
+
+    "validation_dialog_title": "Validación del modelo",
+    "model_validating": "Validando modelo...",
+    "model_validating_description": "La aplicación está cargando el modelo y comprobando que pueda ejecutarse en este dispositivo.",
 }
 
 

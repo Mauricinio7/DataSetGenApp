@@ -24,6 +24,7 @@ class SplashScreen(QWidget):
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.Tool
+
         )
 
         self.setAttribute(
@@ -48,7 +49,7 @@ class SplashScreen(QWidget):
         image_ratio = self._pixmap.height() / self._pixmap.width()
         splash_height = int(splash_width * image_ratio)
 
-        self.resize(splash_width, splash_height)
+        self.setFixedSize(splash_width, splash_height)
 
         center_x = (
             available_geometry.x()

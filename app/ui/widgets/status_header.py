@@ -42,6 +42,14 @@ class StatusHeader(QFrame):
             self._create_status_item(text("header_export"), self.export_value)
         )
 
+    def set_model(self, model_name: str) -> None:
+        self.model_value.setText(model_name)
+        self.model_value.setToolTip(model_name)
+
+    def clear_model(self) -> None:
+        self.model_value.setText(text("not_selected"))
+        self.model_value.setToolTip("")
+
     @staticmethod
     def _create_status_item(label_text: str, value_label: QLabel) -> QWidget:
         item = QWidget()
@@ -60,3 +68,4 @@ class StatusHeader(QFrame):
         layout.addWidget(value_label)
 
         return item
+    
