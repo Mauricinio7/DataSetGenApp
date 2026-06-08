@@ -744,3 +744,73 @@ QLabel#exportStructureText {
     font-family: "Menlo", "SF Mono", "Consolas";
     font-size: 12px;
 }
+/* ----------------------------------------------------------
+   Paso 4: ejecución del análisis
+   ---------------------------------------------------------- */
+
+QFrame#analysisWarningCard {
+    background-color: #342b1d;
+    border: 1px solid #715826;
+    border-radius: 8px;
+}
+
+QLabel#analysisWarningText {
+    color: #d8c49b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QFrame#analysisMetricsCard {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 10px;
+}
+
+QFrame#analysisMetricRow {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+    border-radius: 7px;
+}
+
+QLabel#analysisMetricLabel {
+    color: #94a3b5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+QLabel#analysisMetricValue {
+    color: #edf2f7;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QFrame#analysisActionsCard {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 10px;
+}
+
+QPushButton#dangerButton {
+    color: #ffffff;
+    background-color: #a93f3f;
+    border: 1px solid #c75a5a;
+    border-radius: 7px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#dangerButton:hover:enabled {
+    background-color: #bd4d4d;
+    border: 1px solid #df7474;
+}
+
+QPushButton#dangerButton:pressed:enabled {
+    background-color: #8f3434;
+}
+
+QPushButton#dangerButton:disabled {
+    color: #806d6d;
+    background-color: #3a3030;
+    border: 1px solid #4a3838;
+}

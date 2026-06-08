@@ -100,6 +100,48 @@ TEXTS_ES: Final[dict[str, str]] = {
     "export_error_title": "No se pudo preparar la exportación",
     "export_error_message": "No fue posible crear la estructura del dataset en la carpeta seleccionada.",
     "placeholder_analysis_message": "Aquí ejecutaremos el análisis del video utilizando el modelo seleccionado.",
+
+    "analysis_warning_text_short": "Adevertencia, el proceso puede tardar y usar CPU/GPU, memoria y almacenamiento en gran medida, se recomienda cerrar otras aplicacioens",
+    "analysis_title": "Ejecutar análisis",
+    "analysis_description": "El video será procesado con el modelo seleccionado para generar imágenes, etiquetas y vistas previas del dataset.",
+    "analysis_warning_title": "Antes de iniciar",
+    "analysis_warning_text": "Este proceso puede tardar varios minutos y utilizar una cantidad considerable de CPU, GPU, memoria y almacenamiento. Evita cerrar la aplicación mientras se ejecuta el análisis.",
+    "analysis_video_fps": "FPS del video",
+    "analysis_target_fps": "FPS de extracción",
+    "analysis_total_frames": "Frames totales",
+    "analysis_analyzed_frames": "Frames analizados",
+    "analysis_remaining_frames": "Frames restantes",
+    "analysis_processed_video_time": "Tiempo de video abarcado",
+    "analysis_elapsed_time": "Tiempo transcurrido",
+    "analysis_estimated_time": "Tiempo estimado restante",
+    "analysis_processing_rate": "Velocidad",
+    "analysis_processed_video_time": "Video abarcado",
+    "analysis_estimated_time": "Restante estimado",
+    "analysis_elapsed_time": "Transcurrido",
+    "analysis_saved_images": "Imágenes",
+    "analysis_saved_labels": "Etiquetas",
+    "analysis_detections": "Detecciones",
+    "analysis_status": "Estado",
+    "analysis_status_ready": "Listo para iniciar",
+    "analysis_status_running": "Analizando video",
+    "analysis_status_paused": "Análisis pausado",
+    "analysis_status_cancelled": "Análisis cancelado",
+    "analysis_status_finished": "Análisis finalizado",
+    "start_analysis": "Iniciar proceso",
+    "pause_analysis": "Pausar",
+    "resume_analysis": "Reanudar",
+    "cancel_analysis": "Cancelar análisis",
+    "cancel_analysis_title": "Cancelar análisis",
+    "cancel_analysis_message": "¿Seguro que deseas cancelar el análisis? Se eliminarán los archivos generados durante este proceso.",
+
+
+    "analysis_finished_title": "Proceso terminado",
+    "analysis_finished_message": "El análisis finalizó correctamente. Puedes continuar a la siguiente ventana.",
+    "progress_title": "Progreso del análisis",
+    "progress_waiting": "Esperando configuración",
+    "placeholder_analysis_message": "Aquí se mostrarán los resultados generados.",
+
+    
 }
 
 

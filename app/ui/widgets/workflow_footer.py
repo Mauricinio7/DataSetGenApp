@@ -68,7 +68,25 @@ class WorkflowFooter(QFrame):
     def set_next_enabled(self, enabled: bool) -> None:
         self.next_button.setEnabled(enabled)
 
+    def set_previous_enabled(self, enabled: bool) -> None:
+        self.previous_button.setEnabled(enabled)
+
     def set_step_has_previous(self, has_previous: bool) -> None:
         self.previous_button.setText(
             text("previous") if has_previous else text("cancel")
         )
+
+    def set_progress_value(self, value: int) -> None:
+        bounded_value = max(0, min(100, value))
+        self.progress_bar.setValue(bounded_value)
+
+    def set_progress_enabled(self, enabled: bool) -> None:
+        self.progress_bar.setEnabled(enabled)
+
+    def set_progress_status(self, message: str) -> None:
+        self.progress_status.setText(message)
+
+    def reset_progress(self) -> None:
+        self.progress_bar.setValue(0)
+        self.progress_bar.setEnabled(False)
+        self.progress_status.setText(text("progress_waiting"))
