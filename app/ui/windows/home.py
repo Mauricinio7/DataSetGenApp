@@ -4,8 +4,11 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QVBoxLayout,
     QWidget,
-    QApplication
+    QApplication,
+    QMessageBox,
 )
+
+from pathlib import Path
 
 from app.localization.texts import text
 
@@ -16,8 +19,16 @@ from app.ui.widgets.video_preview_panel import VideoPreviewPanel
 
 from app.ui.pages.select_model_page import SelectModelPage
 from app.ui.pages.upload_video_page import UploadVideoPage
+from app.ui.pages.select_export_path_page import SelectExportPathPage
 from app.ui.pages.placeholder_page import PlaceholderPage
 
+from core.models.dataset_workspace import DatasetWorkspace
+from core.models.model_info import ModelInfo
+from core.models.video_info import VideoInfo
+from core.services.dataset_workspace_service import (
+    DatasetWorkspaceError,
+    DatasetWorkspaceService,
+)
 
 
 class MainWindow(QMainWindow):
@@ -30,10 +41,19 @@ class MainWindow(QMainWindow):
 
         self._current_step = 0
         self._maximum_unlocked_step = 0
-        self._video_is_selected = False
-        self._analysis_is_running = False
-        self._model_is_selected = False
 
+        self._video_info: VideoInfo | None = None
+        self._model_info: ModelInfo | None = None
+
+        self._video_is_selected = False
+        self._model_is_selected = False
+        self._analysis_is_running = False
+        self._export_base_directory: Path | None = None
+        self._dataset_workspace: DatasetWorkspace | None = None
+
+        self._export_path_is_selected = False
+        self._workspace_is_created = False
+        
         self._build_ui()
         self._connect_events()
         self._show_step(0)
@@ -69,13 +89,16 @@ class MainWindow(QMainWindow):
 
         self.upload_video_page = UploadVideoPage()
         self.select_model_page = SelectModelPage()
-        self.placeholder_page = PlaceholderPage(
-            text("placeholder_model_message")
+        self.select_export_path_page = SelectExportPathPage()
+
+        self.analysis_page = PlaceholderPage(
+            text("placeholder_analysis_message")
         )
 
         self.pages.addWidget(self.upload_video_page)
         self.pages.addWidget(self.select_model_page)
-        self.pages.addWidget(self.placeholder_page)
+        self.pages.addWidget(self.select_export_path_page)
+        self.pages.addWidget(self.analysis_page)
 
         workspace = QWidget()
         workspace.setObjectName("workspaceContainer")
@@ -97,23 +120,45 @@ class MainWindow(QMainWindow):
 
     def _connect_events(self) -> None:
         self.upload_video_page.video_selected.connect(self._on_video_selected)
+
         self.select_model_page.model_selected.connect(self._on_model_selected)
         self.select_model_page.model_invalidated.connect(
             self._on_model_invalidated
         )
+
+        self.select_export_path_page.export_path_selected.connect(
+            self._on_export_path_selected
+        )
+
         self.sidebar.step_requested.connect(self._request_step)
         self.footer.previous_clicked.connect(self._go_previous_or_cancel)
         self.footer.next_clicked.connect(self._go_next)
 
-    def _on_video_selected(self, video_info: object) -> None:
+    def _on_video_selected(self, video_info: VideoInfo) -> None:
+        video_changed = (
+            self._video_info is not None
+            and self._video_info.path != video_info.path
+        )
+
+        self._video_info = video_info
         self._video_is_selected = True
 
         self.video_preview.load_video(video_info.path)
 
+        if video_changed:
+            self._invalidate_created_workspace()
+
+            self._maximum_unlocked_step = min(
+                self._maximum_unlocked_step,
+                2,
+            )
+            self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
+
         if self._current_step == 0:
             self.footer.set_next_enabled(True)
 
-    def _on_model_selected(self, model_info: object) -> None:
+    def _on_model_selected(self, model_info: ModelInfo) -> None:
+        self._model_info = model_info
         self._model_is_selected = True
 
         self.header.set_model(model_info.file_name)
@@ -123,8 +168,13 @@ class MainWindow(QMainWindow):
 
     def _on_model_invalidated(self) -> None:
         self._model_is_selected = False
+        self._model_info = None
 
         self.header.clear_model()
+
+        self._export_base_directory = None
+        self._export_path_is_selected = False
+        self._invalidate_created_workspace()
 
         self._maximum_unlocked_step = min(
             self._maximum_unlocked_step,
@@ -134,6 +184,28 @@ class MainWindow(QMainWindow):
         self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
 
         self._show_step(1)
+
+    def _on_export_path_selected(self, base_directory: Path) -> None:
+        self._export_base_directory = base_directory
+        self._export_path_is_selected = True
+
+        self._invalidate_created_workspace()
+
+        if self._current_step == 2:
+            self.footer.set_next_enabled(True)
+
+    def _invalidate_created_workspace(self) -> None:
+        self._dataset_workspace = None
+        self._workspace_is_created = False
+
+        self.header.clear_export_path()
+
+        self._maximum_unlocked_step = min(
+            self._maximum_unlocked_step,
+            2,
+        )
+
+        self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
 
     def _request_step(self, requested_step: int) -> None:
         if self._analysis_is_running:
@@ -147,15 +219,37 @@ class MainWindow(QMainWindow):
             return
 
         if self._current_step == 0 and self._video_is_selected:
-            self._maximum_unlocked_step = max(self._maximum_unlocked_step, 1)
+            self._maximum_unlocked_step = max(
+                self._maximum_unlocked_step,
+                1,
+            )
             self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
             self._show_step(1)
             return
 
         if self._current_step == 1 and self._model_is_selected:
-            self._maximum_unlocked_step = max(self._maximum_unlocked_step, 2)
+            self._maximum_unlocked_step = max(
+                self._maximum_unlocked_step,
+                2,
+            )
             self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
             self._show_step(2)
+            return
+
+        if self._current_step == 2 and self._export_path_is_selected:
+            if (
+                self._workspace_is_created
+                and self._dataset_workspace is not None
+            ):
+                self._maximum_unlocked_step = max(
+                    self._maximum_unlocked_step,
+                    3,
+                )
+                self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
+                self._show_step(3)
+                return
+
+            self._create_dataset_workspace()
 
     def _go_previous_or_cancel(self) -> None:
         if self._analysis_is_running:
@@ -176,5 +270,50 @@ class MainWindow(QMainWindow):
             self.footer.set_next_enabled(self._video_is_selected)
         elif step_index == 1:
             self.footer.set_next_enabled(self._model_is_selected)
+        elif step_index == 2:
+            self.footer.set_next_enabled(self._export_path_is_selected)
         else:
             self.footer.set_next_enabled(False)
+
+    def _create_dataset_workspace(self) -> None:
+        if (
+            self._export_base_directory is None
+            or self._video_info is None
+            or self._model_info is None
+        ):
+            QMessageBox.warning(
+                self,
+                text("export_error_title"),
+                text("export_error_message"),
+            )
+            return
+
+        try:
+            workspace = DatasetWorkspaceService.create(
+                base_directory=self._export_base_directory,
+                video_info=self._video_info,
+                model_info=self._model_info,
+            )
+        except DatasetWorkspaceError as error:
+            QMessageBox.warning(
+                self,
+                text("export_error_title"),
+                f"{text('export_error_message')}\n\n{error}",
+            )
+            return
+
+        self._dataset_workspace = workspace
+        self._workspace_is_created = True
+
+        self.header.set_export_path(
+            str(workspace.root_directory)
+        )
+
+        self._maximum_unlocked_step = max(
+            self._maximum_unlocked_step,
+            3,
+        )
+
+        self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
+
+        self._show_step(3)

@@ -50,6 +50,14 @@ class StatusHeader(QFrame):
         self.model_value.setText(text("not_selected"))
         self.model_value.setToolTip("")
 
+    def set_export_path(self, export_path: str) -> None:
+        self.export_value.setText(export_path)
+        self.export_value.setToolTip(export_path)
+
+    def clear_export_path(self) -> None:
+        self.export_value.setText(text("not_selected"))
+        self.export_value.setToolTip("")
+
     @staticmethod
     def _create_status_item(label_text: str, value_label: QLabel) -> QWidget:
         item = QWidget()

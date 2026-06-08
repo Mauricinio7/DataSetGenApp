@@ -83,6 +83,23 @@ TEXTS_ES: Final[dict[str, str]] = {
     "validation_dialog_title": "Validación del modelo",
     "model_validating": "Validando modelo...",
     "model_validating_description": "La aplicación está cargando el modelo y comprobando que pueda ejecutarse en este dispositivo.",
+
+    "export_title": "Ruta de exportación",
+    "export_description": "Selecciona la carpeta donde se generará la estructura del dataset.",
+    "select_export_path": "Seleccionar carpeta",
+    "change_export_path": "Cambiar carpeta",
+    "export_information": "Destino seleccionado",
+    "export_base_directory": "Carpeta base",
+    "export_workspace": "Carpeta de generación",
+    "export_status": "Estado",
+    "export_empty": "Aún no se ha seleccionado una carpeta de exportación.",
+    "export_ready": "Ruta seleccionada. La estructura se creará al continuar.",
+    "export_structure_title": "Estructura que se generará",
+    "export_structure_preview": "GeneratedDataSet_fecha_hora/\n├── images/\n├── labels/\n├── previews/\n└── Info.txt",
+    "export_dialog_title": "Seleccionar carpeta de exportación",
+    "export_error_title": "No se pudo preparar la exportación",
+    "export_error_message": "No fue posible crear la estructura del dataset en la carpeta seleccionada.",
+    "placeholder_analysis_message": "Aquí ejecutaremos el análisis del video utilizando el modelo seleccionado.",
 }
 
 

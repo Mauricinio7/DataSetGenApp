@@ -696,3 +696,51 @@ QProgressBar#validationProgress::chunk {
     background-color: #217ccb;
     border-radius: 4px;
 }
+
+/* ----------------------------------------------------------
+   Paso 3: selección de ruta de exportación
+   ---------------------------------------------------------- */
+
+QFrame#exportStatusCard {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+    border-radius: 8px;
+}
+
+QFrame#exportStatusCard[exportState="empty"] {
+    background-color: #252c34;
+    border: 1px solid #333c47;
+}
+
+QFrame#exportStatusCard[exportState="selected"] {
+    background-color: #17382f;
+    border: 1px solid #277056;
+}
+
+QLabel#exportStatusValue {
+    color: #d8dfe8;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QFrame#exportStatusCard[exportState="selected"] QLabel#exportStatusValue {
+    color: #d2efe1;
+}
+
+QFrame#exportStructureCard {
+    background-color: #1d2731;
+    border: 1px solid #334454;
+    border-radius: 8px;
+}
+
+QLabel#exportStructureTitle {
+    color: #d8e3ef;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#exportStructureText {
+    color: #9aa8b9;
+    font-family: "Menlo", "SF Mono", "Consolas";
+    font-size: 12px;
+}
