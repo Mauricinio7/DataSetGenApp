@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 from app.localization.texts import text
 from app.ui.pages.analysis_page import AnalysisPage
 from app.ui.pages.placeholder_page import PlaceholderPage
+from app.ui.pages.review_data_page import ReviewDataPage
 from app.ui.pages.select_export_path_page import SelectExportPathPage
 from app.ui.pages.select_model_page import SelectModelPage
 from app.ui.pages.upload_video_page import UploadVideoPage
@@ -103,16 +104,18 @@ class MainWindow(QMainWindow):
         self.select_model_page = SelectModelPage()
         self.select_export_path_page = SelectExportPathPage()
         self.analysis_page = AnalysisPage()
+        self.review_data_page = ReviewDataPage()
 
-        self.placeholder_page = PlaceholderPage(
-            text("placeholder_analysis_message")
+        self.finish_placeholder_page = PlaceholderPage(
+            text("placeholder_finish_message")
         )
 
         self.pages.addWidget(self.upload_video_page)
         self.pages.addWidget(self.select_model_page)
         self.pages.addWidget(self.select_export_path_page)
         self.pages.addWidget(self.analysis_page)
-        self.pages.addWidget(self.placeholder_page)
+        self.pages.addWidget(self.review_data_page)
+        self.pages.addWidget(self.finish_placeholder_page)
 
         workspace = QWidget()
         workspace.setObjectName("workspaceContainer")
@@ -312,6 +315,15 @@ class MainWindow(QMainWindow):
             self._show_step(4)
             return
 
+        if self._current_step == 4:
+            self._maximum_unlocked_step = max(
+                self._maximum_unlocked_step,
+                5,
+            )
+            self.sidebar.set_unlocked_step(self._maximum_unlocked_step)
+            self._show_step(5)
+            return
+
     def _go_previous_or_cancel(self) -> None:
         if self._analysis_is_running:
             return
@@ -328,6 +340,11 @@ class MainWindow(QMainWindow):
         self.sidebar.set_current_step(step_index)
         self.footer.set_step_has_previous(step_index > 0)
 
+        self._set_review_layout_enabled(step_index == 4)
+
+        if step_index == 4 and self._dataset_workspace is not None:
+            self.review_data_page.load_workspace(self._dataset_workspace)
+
         if step_index == 0:
             self.footer.set_next_enabled(self._video_is_selected)
         elif step_index == 1:
@@ -336,8 +353,21 @@ class MainWindow(QMainWindow):
             self.footer.set_next_enabled(self._export_path_is_selected)
         elif step_index == 3:
             self.footer.set_next_enabled(self._analysis_is_finished)
+        elif step_index == 4:
+            self.footer.set_next_enabled(True)
         else:
             self.footer.set_next_enabled(False)
+
+    def _set_review_layout_enabled(self, enabled: bool) -> None:
+        if enabled:
+            self.video_preview.setVisible(False)
+            self.pages.setMinimumWidth(700)
+            self.pages.setMaximumWidth(16777215)
+            return
+
+        self.video_preview.setVisible(True)
+        self.pages.setMinimumWidth(350)
+        self.pages.setMaximumWidth(390)
 
     def _create_dataset_workspace(self) -> None:
         if (
@@ -591,11 +621,13 @@ class MainWindow(QMainWindow):
         self.footer.set_progress_status(text("analysis_status_cancelled"))
 
         self.analysis_page.set_cancelled_state()
-        self.analysis_page.set_initial_video_metrics(
-            video_fps=self._video_info.fps_text if self._video_info else text("not_selected"),
-            target_fps="5.00",
-            total_frames=self.analysis_page.total_frames_value.text(),
-        )
+
+        if self._video_info is not None:
+            self.analysis_page.set_initial_video_metrics(
+                video_fps=self._video_info.fps_text,
+                target_fps="5.00",
+                total_frames=self.analysis_page.total_frames_value.text(),
+            )
 
     def _on_analysis_failed(self, error_message: str) -> None:
         self._analysis_is_running = False

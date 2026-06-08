@@ -141,7 +141,22 @@ TEXTS_ES: Final[dict[str, str]] = {
     "progress_waiting": "Esperando configuración",
     "placeholder_analysis_message": "Aquí se mostrarán los resultados generados.",
 
-    
+    "review_title": "Revisión de datos",
+    "review_description": "Revise todos los datos encontrados y presione borrar para eliminar algún registro incorrecto.",
+    "review_empty": "No se encontraron registros para revisar.",
+    "delete_record": "Borrar registro",
+    "delete_record_title": "Eliminar registro",
+    "delete_record_message": "¿Seguro que quiere eliminar este registro? Esta acción no se puede recuperar.",
+    "record_deleted": "Registro eliminado",
+    "placeholder_finish_message": "Aquí se mostrará el resumen final del dataset generado.",
+    "loading_review_title": "Cargando vista previa",
+    "loading_review_message": "Preparando los registros encontrados. Esto puede tardar si hay muchas imágenes.",
+
+    "finish_title": "Proceso finalizado",
+    "finish_dataset_location_intro": "Puede ver su dataset nuevo en:",
+    "finish_thank_you": "Gracias por usar la aplicación.",
+    "start_new_process": "Iniciar otro proceso",
+    "finish_app": "Finalizar",
 }
 
 

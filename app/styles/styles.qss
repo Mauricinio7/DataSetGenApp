@@ -814,3 +814,68 @@ QPushButton#dangerButton:disabled {
     background-color: #3a3030;
     border: 1px solid #4a3838;
 }
+/* ----------------------------------------------------------
+   Paso 5: revisión de datos
+   ---------------------------------------------------------- */
+
+QWidget#reviewDataPage {
+    background-color: transparent;
+}
+
+QScrollArea#reviewScrollArea {
+    background-color: transparent;
+    border: none;
+}
+
+QScrollArea#reviewScrollArea QScrollBar:vertical {
+    background-color: #1b2028;
+    width: 10px;
+    margin: 0px;
+}
+
+QWidget#reviewGridContainer {
+    background-color: transparent;
+}
+
+QLabel#reviewEmptyText {
+    color: #96a3b5;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QFrame#reviewRecordCard {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 10px;
+}
+
+QLabel#reviewPreviewImage {
+    background-color: #111820;
+    border: 1px solid #2b3440;
+    border-radius: 8px;
+    color: #7f8da0;
+}
+
+QLabel#reviewRecordName {
+    color: #d8dfe8;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+QPushButton#deleteRecordButton {
+    color: #ffffff;
+    background-color: #8f3434;
+    border: 1px solid #b94e4e;
+    border-radius: 7px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+QPushButton#deleteRecordButton:hover:enabled {
+    background-color: #aa4141;
+    border: 1px solid #d06868;
+}
+
+QPushButton#deleteRecordButton:pressed:enabled {
+    background-color: #732929;
+}
