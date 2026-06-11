@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 
 from app.localization.texts import text
 from app.ui.pages.analysis_page import AnalysisPage
-from app.ui.pages.placeholder_page import PlaceholderPage
+from app.ui.pages.finish_page import FinishPage
 from app.ui.pages.review_data_page import ReviewDataPage
 from app.ui.pages.select_export_path_page import SelectExportPathPage
 from app.ui.pages.select_model_page import SelectModelPage
@@ -105,17 +105,14 @@ class MainWindow(QMainWindow):
         self.select_export_path_page = SelectExportPathPage()
         self.analysis_page = AnalysisPage()
         self.review_data_page = ReviewDataPage()
-
-        self.finish_placeholder_page = PlaceholderPage(
-            text("placeholder_finish_message")
-        )
+        self.finish_page = FinishPage()
 
         self.pages.addWidget(self.upload_video_page)
         self.pages.addWidget(self.select_model_page)
         self.pages.addWidget(self.select_export_path_page)
         self.pages.addWidget(self.analysis_page)
         self.pages.addWidget(self.review_data_page)
-        self.pages.addWidget(self.finish_placeholder_page)
+        self.pages.addWidget(self.finish_page)
 
         workspace = QWidget()
         workspace.setObjectName("workspaceContainer")
@@ -163,6 +160,10 @@ class MainWindow(QMainWindow):
 
         self.analysis_page.cancel_requested.connect(
             self._request_cancel_analysis
+        )
+
+        self.finish_page.close_app_requested.connect(
+            self.close
         )
 
         self.sidebar.step_requested.connect(self._request_step)
@@ -340,10 +341,15 @@ class MainWindow(QMainWindow):
         self.sidebar.set_current_step(step_index)
         self.footer.set_step_has_previous(step_index > 0)
 
-        self._set_review_layout_enabled(step_index == 4)
+        self._set_full_width_layout_enabled(step_index in (4, 5))
 
         if step_index == 4 and self._dataset_workspace is not None:
             self.review_data_page.load_workspace(self._dataset_workspace)
+
+        if step_index == 5 and self._dataset_workspace is not None:
+            self.finish_page.set_dataset_path(
+                self._dataset_workspace.root_directory
+            )
 
         if step_index == 0:
             self.footer.set_next_enabled(self._video_is_selected)
@@ -358,7 +364,7 @@ class MainWindow(QMainWindow):
         else:
             self.footer.set_next_enabled(False)
 
-    def _set_review_layout_enabled(self, enabled: bool) -> None:
+    def _set_full_width_layout_enabled(self, enabled: bool) -> None:
         if enabled:
             self.video_preview.setVisible(False)
             self.pages.setMinimumWidth(700)
@@ -469,7 +475,7 @@ class MainWindow(QMainWindow):
             model_info=self._model_info,
             workspace=self._dataset_workspace,
             target_fps=5.0,
-            confidence_threshold=0.25,
+            confidence_threshold=0.70,
         )
 
         self._analysis_worker.moveToThread(self._analysis_thread)
@@ -648,6 +654,54 @@ class MainWindow(QMainWindow):
             text("export_error_title"),
             error_message,
         )
+
+    def _start_new_process(self) -> None:
+        if self._analysis_is_running:
+            return
+
+        self._video_info = None
+        self._model_info = None
+        self._export_base_directory = None
+        self._dataset_workspace = None
+
+        self._video_is_selected = False
+        self._model_is_selected = False
+        self._export_path_is_selected = False
+        self._workspace_is_created = False
+
+        self._analysis_is_running = False
+        self._analysis_is_finished = False
+
+        self._analysis_thread = None
+        self._analysis_worker = None
+
+        self._current_step = 0
+        self._maximum_unlocked_step = 0
+
+        self.header.clear_model()
+        self.header.clear_export_path()
+
+        self.footer.reset_progress()
+        self.footer.set_previous_enabled(True)
+        self.footer.set_next_enabled(False)
+
+        self.sidebar.set_navigation_enabled(True)
+        self.sidebar.set_unlocked_step(0)
+
+        self.analysis_page.set_ready_state()
+
+        self._clear_video_preview_if_possible()
+        self._set_full_width_layout_enabled(False)
+
+        self._show_step(0)
+
+    def _clear_video_preview_if_possible(self) -> None:
+        if hasattr(self.video_preview, "clear"):
+            self.video_preview.clear()
+            return
+
+        if hasattr(self.video_preview, "clear_preview"):
+            self.video_preview.clear_preview()
 
     def _clear_analysis_references(self) -> None:
         self._analysis_thread = None

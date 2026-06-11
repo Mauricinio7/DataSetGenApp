@@ -1,3 +1,4 @@
+import csv
 import shutil
 import time
 from datetime import datetime
@@ -13,11 +14,15 @@ from core.models.video_info import VideoInfo
 
 
 class AnalysisWorker(QObject):
+    """Procesa el video con YOLO sin bloquear la interfaz."""
 
     progress_changed = Signal(dict)
     finished = Signal()
     cancelled = Signal()
     failed = Signal(str)
+
+    CLASS_ID = 0
+    CLASS_NAME = "polyp"
 
     def __init__(
         self,
@@ -25,7 +30,7 @@ class AnalysisWorker(QObject):
         model_info: ModelInfo,
         workspace: DatasetWorkspace,
         target_fps: float = 5.0,
-        confidence_threshold: float = 0.25,
+        confidence_threshold: float = 0.70,
     ) -> None:
         super().__init__()
 
@@ -43,6 +48,12 @@ class AnalysisWorker(QObject):
 
         self._started_at: datetime | None = None
         self._finished_at: datetime | None = None
+
+        self._summary_rows: list[dict] = []
+
+        self._summary_path = (
+            self._workspace.root_directory / "detections_summary.csv"
+        )
 
         self._last_summary: dict = {
             "analyzed_frames": 0,
@@ -126,6 +137,7 @@ class AnalysisWorker(QObject):
         start_time = time.time()
         frame_index = 0
 
+        run_name = self._video_info.path.stem
         device_argument = self._device_argument()
 
         while True:
@@ -164,38 +176,57 @@ class AnalysisWorker(QObject):
                     final_status="CANCELLED",
                     status_message=(
                         "Analysis cancelled by user. Generated images, "
-                        "labels and previews were removed."
+                        "labels, previews and summary were removed."
                     ),
                 )
 
                 self.cancelled.emit()
                 return
 
-            success, frame = capture.read()
+            success, frame_bgr = capture.read()
 
             if not success:
                 break
 
-            if frame_index % frame_interval != 0:
+            should_process = frame_index % frame_interval == 0
+
+            if not should_process:
                 frame_index += 1
                 continue
 
+            analyzed_frames += 1
+
+            frame_rgb = cv2.cvtColor(
+                frame_bgr,
+                cv2.COLOR_BGR2RGB,
+            )
+
+            image_height, image_width = frame_rgb.shape[:2]
+
             results = model.predict(
-                source=frame,
+                source=frame_rgb,
                 conf=self._confidence_threshold,
                 verbose=False,
                 device=device_argument,
             )
 
             result = results[0]
-            boxes = result.boxes
 
-            if boxes is not None and len(boxes) > 0:
-                detections_for_frame = len(boxes)
-                detections_count += detections_for_frame
-                saved_items += 1
+            yolo_lines = self._result_to_yolo_lines(
+                result=result,
+                image_width=image_width,
+                image_height=image_height,
+                expected_class_id=self.CLASS_ID,
+            )
 
-                base_name = f"frame_{frame_index:08d}"
+            if len(yolo_lines) > 0:
+                timestamp_sec = (
+                    frame_index / original_fps
+                    if original_fps > 0
+                    else 0.0
+                )
+
+                base_name = f"{run_name}_f{frame_index:06d}"
 
                 image_path = (
                     self._workspace.images_directory
@@ -210,11 +241,56 @@ class AnalysisWorker(QObject):
                     / f"{base_name}.jpg"
                 )
 
-                cv2.imwrite(str(image_path), frame)
-                self._write_yolo_label(label_path, boxes)
-                self._write_preview(preview_path, frame, boxes)
+                cv2.imwrite(str(image_path), frame_bgr)
 
-            analyzed_frames += 1
+                label_path.write_text(
+                    "\n".join(yolo_lines) + "\n",
+                    encoding="utf-8",
+                )
+
+                annotated_rgb = result.plot()
+
+                annotated_bgr = cv2.cvtColor(
+                    annotated_rgb,
+                    cv2.COLOR_RGB2BGR,
+                )
+
+                cv2.imwrite(str(preview_path), annotated_bgr)
+
+                confidences = self._get_class_confidences(
+                    result=result,
+                    expected_class_id=self.CLASS_ID,
+                )
+
+                num_boxes = len(confidences)
+                detections_count += num_boxes
+                saved_items += 1
+
+                self._summary_rows.append(
+                    {
+                        "video_path": str(self._video_info.path),
+                        "run_name": run_name,
+                        "frame_idx": frame_index,
+                        "timestamp_sec": round(timestamp_sec, 3),
+                        "image_path": str(image_path),
+                        "label_path": str(label_path),
+                        "preview_path": str(preview_path),
+                        "num_boxes": num_boxes,
+                        "max_confidence": round(
+                            max(confidences),
+                            6,
+                        )
+                        if confidences
+                        else 0.0,
+                        "mean_confidence": round(
+                            sum(confidences) / len(confidences),
+                            6,
+                        )
+                        if confidences
+                        else 0.0,
+                    }
+                )
+
             frame_index += 1
 
             elapsed_seconds = time.time() - start_time
@@ -289,6 +365,8 @@ class AnalysisWorker(QObject):
         self._last_summary.update(final_progress)
         self.progress_changed.emit(final_progress)
 
+        self._write_summary_csv()
+
         self._update_info_file(
             final_status="FINISHED",
             status_message="Analysis finished successfully.",
@@ -343,6 +421,32 @@ class AnalysisWorker(QObject):
                 else:
                     item.unlink()
 
+        if self._summary_path.exists():
+            self._summary_path.unlink()
+
+    def _write_summary_csv(self) -> None:
+        fieldnames = [
+            "video_path",
+            "run_name",
+            "frame_idx",
+            "timestamp_sec",
+            "image_path",
+            "label_path",
+            "preview_path",
+            "num_boxes",
+            "max_confidence",
+            "mean_confidence",
+        ]
+
+        with self._summary_path.open(
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(self._summary_rows)
+
     def _update_info_file(
         self,
         final_status: str,
@@ -390,9 +494,12 @@ class AnalysisWorker(QObject):
             f"Images directory: {self._workspace.images_directory}\n"
             f"Labels directory: {self._workspace.labels_directory}\n"
             f"Previews directory: {self._workspace.previews_directory}\n"
+            f"Summary CSV: {self._summary_path}\n"
             f"Info file: {self._workspace.info_file}\n\n"
             "ANALYSIS CONFIGURATION\n"
             "----------------------\n"
+            f"Class ID: {self.CLASS_ID}\n"
+            f"Class name: {self.CLASS_NAME}\n"
             f"Target FPS: {self._target_fps:.2f}\n"
             f"Confidence threshold: {self._confidence_threshold:.2f}\n\n"
             "ANALYSIS EXECUTION\n"
@@ -419,40 +526,86 @@ class AnalysisWorker(QObject):
             encoding="utf-8",
         )
 
-    @staticmethod
-    def _write_yolo_label(label_path: Path, boxes) -> None:
-        lines: list[str] = []
+    def _result_to_yolo_lines(
+        self,
+        result,
+        image_width: int,
+        image_height: int,
+        expected_class_id: int,
+    ) -> list[str]:
+        yolo_lines: list[str] = []
 
-        for box in boxes:
+        if result.boxes is None:
+            return yolo_lines
+
+        for box in result.boxes:
             class_id = int(box.cls[0].item())
-            x_center, y_center, width, height = box.xywhn[0].tolist()
 
-            lines.append(
+            if class_id != expected_class_id:
+                continue
+
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+
+            x_center, y_center, bbox_width, bbox_height = (
+                self._xyxy_to_yolo_bbox(
+                    x1=x1,
+                    y1=y1,
+                    x2=x2,
+                    y2=y2,
+                    image_width=image_width,
+                    image_height=image_height,
+                )
+            )
+
+            yolo_line = (
                 f"{class_id} "
                 f"{x_center:.6f} "
                 f"{y_center:.6f} "
-                f"{width:.6f} "
-                f"{height:.6f}"
+                f"{bbox_width:.6f} "
+                f"{bbox_height:.6f}"
             )
 
-        label_path.write_text("\n".join(lines), encoding="utf-8")
+            yolo_lines.append(yolo_line)
+
+        return yolo_lines
 
     @staticmethod
-    def _write_preview(preview_path: Path, frame, boxes) -> None:
-        preview = frame.copy()
+    def _get_class_confidences(
+        result,
+        expected_class_id: int,
+    ) -> list[float]:
+        confidences: list[float] = []
 
-        for box in boxes:
-            x1, y1, x2, y2 = box.xyxy[0].tolist()
+        if result.boxes is None:
+            return confidences
 
-            cv2.rectangle(
-                preview,
-                (int(x1), int(y1)),
-                (int(x2), int(y2)),
-                (0, 255, 0),
-                2,
-            )
+        for box in result.boxes:
+            class_id = int(box.cls[0].item())
 
-        cv2.imwrite(str(preview_path), preview)
+            if class_id != expected_class_id:
+                continue
+
+            confidence = float(box.conf[0].item())
+            confidences.append(confidence)
+
+        return confidences
+
+    @staticmethod
+    def _xyxy_to_yolo_bbox(
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        image_width: int,
+        image_height: int,
+    ) -> tuple[float, float, float, float]:
+        x_center = ((x1 + x2) / 2) / image_width
+        y_center = ((y1 + y2) / 2) / image_height
+
+        bbox_width = (x2 - x1) / image_width
+        bbox_height = (y2 - y1) / image_height
+
+        return x_center, y_center, bbox_width, bbox_height
 
     @staticmethod
     def _format_seconds(seconds: float) -> str:

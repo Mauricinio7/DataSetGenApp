@@ -879,3 +879,57 @@ QPushButton#deleteRecordButton:hover:enabled {
 QPushButton#deleteRecordButton:pressed:enabled {
     background-color: #732929;
 }
+
+/* ----------------------------------------------------------
+   Paso final
+   ---------------------------------------------------------- */
+
+QWidget#finishPage {
+    background-color: transparent;
+}
+
+QFrame#finishCard {
+    background-color: #20262e;
+    border: 1px solid #303a46;
+    border-radius: 16px;
+}
+
+QLabel#finishTitle {
+    color: #f4f7fb;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+QLabel#finishDescription {
+    color: #b9c3d0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+QLabel#finishDatasetPath {
+    color: #ffffff;
+    background-color: #111820;
+    border: 1px solid #2b3440;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#finishThankYou {
+    color: #96a3b5;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QCheckBox#reviewRecordCheckbox {
+    color: #d8dfe8;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+QLabel#reviewSelectedCount {
+    color: #b9c3d0;
+    font-size: 13px;
+    font-weight: 700;
+}

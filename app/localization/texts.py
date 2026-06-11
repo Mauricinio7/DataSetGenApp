@@ -157,6 +157,12 @@ TEXTS_ES: Final[dict[str, str]] = {
     "finish_thank_you": "Gracias por usar la aplicación.",
     "start_new_process": "Iniciar otro proceso",
     "finish_app": "Finalizar",
+
+    "select_record": "Seleccionar registro",
+    "delete_selected_records": "Eliminar seleccionados",
+    "delete_selected_records_title": "Eliminar registros seleccionados",
+    "delete_selected_records_message": "¿Seguro que quiere eliminar los registros seleccionados? Esta acción no se puede recuperar.",
+    "selected_records_count": "Seleccionados",
 }
 
 

@@ -3,9 +3,11 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QFrame,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QMessageBox,
     QProgressBar,
@@ -20,6 +22,7 @@ from core.models.dataset_workspace import DatasetWorkspace
 
 
 class ReviewDataPage(QWidget):
+    """Quinto paso: revisión y eliminación de registros generados."""
 
     records_changed = Signal(int)
 
@@ -38,6 +41,7 @@ class ReviewDataPage(QWidget):
         self._workspace: DatasetWorkspace | None = None
         self._records: list[dict[str, Path]] = []
         self._cards: list[QFrame] = []
+        self._selected_records: set[str] = set()
 
         self._record_count = 0
         self._last_column_count = 0
@@ -65,6 +69,28 @@ class ReviewDataPage(QWidget):
         description.setObjectName("pageDescription")
         description.setWordWrap(True)
 
+        actions_layout = QHBoxLayout()
+        actions_layout.setSpacing(10)
+
+        self.selected_count_label = QLabel(
+            f"{text('selected_records_count')}: 0"
+        )
+        self.selected_count_label.setObjectName("reviewSelectedCount")
+
+        self.delete_selected_button = QPushButton(
+            text("delete_selected_records")
+        )
+        self.delete_selected_button.setObjectName("dangerButton")
+        self.delete_selected_button.setMinimumHeight(36)
+        self.delete_selected_button.setEnabled(False)
+        self.delete_selected_button.clicked.connect(
+            self._confirm_delete_selected_records
+        )
+
+        actions_layout.addWidget(self.selected_count_label)
+        actions_layout.addStretch()
+        actions_layout.addWidget(self.delete_selected_button)
+
         self.empty_label = QLabel(text("review_empty"))
         self.empty_label.setObjectName("reviewEmptyText")
         self.empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -86,6 +112,7 @@ class ReviewDataPage(QWidget):
 
         layout.addWidget(title)
         layout.addWidget(description)
+        layout.addLayout(actions_layout)
         layout.addWidget(self.empty_label, 1)
         layout.addWidget(self.scroll_area, 1)
 
@@ -93,12 +120,15 @@ class ReviewDataPage(QWidget):
         self._workspace = workspace
         self._records = self._find_records(workspace)
         self._record_count = len(self._records)
+        self._selected_records.clear()
 
         self._clear_grid()
         self._cards.clear()
 
         self._next_render_index = 0
         self._last_column_count = 0
+
+        self._update_selection_ui()
 
         self.empty_label.setVisible(self._record_count == 0)
         self.scroll_area.setVisible(self._record_count > 0)
@@ -225,9 +255,37 @@ class ReviewDataPage(QWidget):
         card.setObjectName("reviewRecordCard")
         card.setFixedWidth(self.CARD_WIDTH)
 
+        preview_key = self._record_key(record)
+        card.setProperty("preview_path", preview_key)
+
         layout = QVBoxLayout(card)
         layout.setContentsMargins(9, 9, 9, 9)
         layout.setSpacing(7)
+
+        top_row = QHBoxLayout()
+        top_row.setSpacing(6)
+
+        select_checkbox = QCheckBox(text("select_record"))
+        select_checkbox.setObjectName("reviewRecordCheckbox")
+        select_checkbox.setToolTip(text("select_record"))
+        select_checkbox.stateChanged.connect(
+            lambda state: self._on_record_selection_changed(
+                record,
+                state,
+            )
+        )
+
+        delete_button = QPushButton("🗑")
+        delete_button.setObjectName("deleteRecordButton")
+        delete_button.setToolTip(text("delete_record"))
+        delete_button.setFixedSize(34, 30)
+        delete_button.clicked.connect(
+            lambda: self._confirm_delete_record(record, card)
+        )
+
+        top_row.addWidget(select_checkbox)
+        top_row.addStretch()
+        top_row.addWidget(delete_button)
 
         preview_label = QLabel()
         preview_label.setObjectName("reviewPreviewImage")
@@ -252,19 +310,34 @@ class ReviewDataPage(QWidget):
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setWordWrap(True)
 
-        delete_button = QPushButton("🗑")
-        delete_button.setObjectName("deleteRecordButton")
-        delete_button.setToolTip(text("delete_record"))
-        delete_button.setMinimumHeight(32)
-        delete_button.clicked.connect(
-            lambda: self._confirm_delete_record(record, card)
-        )
-
+        layout.addLayout(top_row)
         layout.addWidget(preview_label)
         layout.addWidget(name_label)
-        layout.addWidget(delete_button)
 
         return card
+
+    def _on_record_selection_changed(
+        self,
+        record: dict[str, Path],
+        state: int,
+    ) -> None:
+        preview_key = self._record_key(record)
+
+        if state == Qt.CheckState.Checked.value:
+            self._selected_records.add(preview_key)
+        else:
+            self._selected_records.discard(preview_key)
+
+        self._update_selection_ui()
+
+    def _update_selection_ui(self) -> None:
+        selected_count = len(self._selected_records)
+
+        self.selected_count_label.setText(
+            f"{text('selected_records_count')}: {selected_count}"
+        )
+
+        self.delete_selected_button.setEnabled(selected_count > 0)
 
     def _confirm_delete_record(
         self,
@@ -292,6 +365,74 @@ class ReviewDataPage(QWidget):
 
         self.records_changed.emit(self._record_count)
 
+    def _confirm_delete_selected_records(self) -> None:
+        if not self._selected_records:
+            return
+
+        response = QMessageBox.warning(
+            self,
+            text("delete_selected_records_title"),
+            text("delete_selected_records_message"),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if response != QMessageBox.StandardButton.Yes:
+            return
+
+        self._delete_selected_records()
+
+    def _delete_selected_records(self) -> None:
+        selected_records = [
+            record
+            for record in self._records
+            if self._record_key(record) in self._selected_records
+        ]
+
+        if not selected_records:
+            self._selected_records.clear()
+            self._update_selection_ui()
+            return
+
+        selected_keys = {
+            self._record_key(record)
+            for record in selected_records
+        }
+
+        for record in selected_records:
+            self._delete_record_files(record)
+
+        self._records = [
+            record
+            for record in self._records
+            if self._record_key(record) not in selected_keys
+        ]
+
+        cards_to_remove = [
+            card
+            for card in self._cards
+            if str(card.property("preview_path")) in selected_keys
+        ]
+
+        for card in cards_to_remove:
+            if card in self._cards:
+                self._cards.remove(card)
+
+            self.grid_layout.removeWidget(card)
+            card.setParent(None)
+            card.deleteLater()
+
+        self._selected_records.clear()
+        self._record_count = len(self._records)
+
+        self.empty_label.setVisible(self._record_count == 0)
+        self.scroll_area.setVisible(self._record_count > 0)
+
+        self._update_selection_ui()
+        self._relayout_cards()
+
+        self.records_changed.emit(self._record_count)
+
     @staticmethod
     def _delete_record_files(record: dict[str, Path]) -> None:
         for key in ("preview", "image", "label"):
@@ -305,10 +446,12 @@ class ReviewDataPage(QWidget):
         record: dict[str, Path],
         card: QFrame,
     ) -> None:
+        self._selected_records.discard(self._record_key(record))
+
         self._records = [
             current_record
             for current_record in self._records
-            if current_record["preview"] != record["preview"]
+            if self._record_key(current_record) != self._record_key(record)
         ]
 
         if card in self._cards:
@@ -318,7 +461,12 @@ class ReviewDataPage(QWidget):
         card.setParent(None)
         card.deleteLater()
 
+        self._update_selection_ui()
         self._relayout_cards()
+
+    @staticmethod
+    def _record_key(record: dict[str, Path]) -> str:
+        return str(record["preview"])
 
     def _clear_grid(self) -> None:
         self._is_rendering = False
